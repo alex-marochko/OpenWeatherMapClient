@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="citiesNamesArray">
+        <item>Днепропетровск</item>
+        <item>Киев</item>
+        <item>Одесса</item>
+    </string-array>
+
+    <string-array name="citiesCodesArray">
+        <item>709930</item>
+        <item>703448</item>
+        <item>698740</item>
+    </string-array>
+</resources>
