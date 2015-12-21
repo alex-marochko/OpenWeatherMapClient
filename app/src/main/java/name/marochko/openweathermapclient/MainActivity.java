@@ -1,17 +1,35 @@
 package name.marochko.openweathermapclient;
 
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
+import net.aksingh.owmjapis.CurrentWeather;
+import net.aksingh.owmjapis.OpenWeatherMap;
+
+import org.json.JSONException;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
     int cityListId;
     TextView textView;
+    final String LOG_TAG = "marinfo";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        textView = (TextView)findViewById(R.id.textView);
+        textView = (TextView) findViewById(R.id.textView);
 
 /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -59,12 +77,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(data == null) return;
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data == null) return;
 
         cityListId = data.getIntExtra("cityListId", 0);
 
         textView.setText(cityListId + "");
+
+    }
+
+    public void onClick(View view){
+
+        Log.d(LOG_TAG, "onClick start");
+
+        Intent intent = new Intent(this, OWMIntentService.class);
+
+        intent.putExtra("cityCode", getResources().getIntArray(R.array.citiesCodesArray)[cityListId]);
+
+        startService(intent);
+
+        Log.d(LOG_TAG, "onClick end");
 
     }
 
