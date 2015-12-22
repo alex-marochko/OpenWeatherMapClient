@@ -1,5 +1,6 @@
 package name.marochko.openweathermapclient;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.gson.Gson;
 
 import net.aksingh.owmjapis.CurrentWeather;
 import net.aksingh.owmjapis.OpenWeatherMap;
@@ -28,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     int cityListId;
     TextView textView;
     final String LOG_TAG = "marinfo";
+    final static int REQUEST_PARAM_CITIES = 1;
+    final static int REQUEST_PARAM_WEATHER = 2;
+    CurrentWeather currentWeather;
 
 
 
@@ -69,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
 
             Intent intent = new Intent(this, SelectCityActivity.class);
-            startActivityForResult(intent, 1);
+            startActivityForResult(intent, REQUEST_PARAM_CITIES);
             return true;
         }
 
@@ -78,11 +83,22 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (data == null) return;
 
-        cityListId = data.getIntExtra("cityListId", 0);
+        switch (requestCode) {
+            case REQUEST_PARAM_CITIES:
+                cityListId = data.getIntExtra("cityListId", 0);
+                textView.setText(cityListId + "");
+                break;
+            case REQUEST_PARAM_WEATHER:
+                String weather = data.getStringExtra("weather");
+                Gson gson = new Gson();
+                currentWeather = gson.fromJson(weather, CurrentWeather.class);
+                textView.setText("We got the information from the Service! " + currentWeather.getWeatherInstance(0).getWeatherCode());
+                Log.d(LOG_TAG, "currentWeather.getRawResponse" + currentWeather.getRawResponse());
 
-        textView.setText(cityListId + "");
+        }
 
     }
 
@@ -90,15 +106,21 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "onClick start");
 
+        Intent dummyIntent = new Intent();
+
+        PendingIntent pendingIntent = createPendingResult(REQUEST_PARAM_WEATHER, dummyIntent, 0);
+
         Intent intent = new Intent(this, OWMIntentService.class);
 
-        intent.putExtra("cityCode", getResources().getIntArray(R.array.citiesCodesArray)[cityListId]);
+        intent.putExtra("cityCode", getResources().getIntArray(R.array.citiesCodesArray)[cityListId])
+                .putExtra("pendingIntent", pendingIntent);
 
         startService(intent);
 
         Log.d(LOG_TAG, "onClick end");
 
     }
+
 
 }
 
