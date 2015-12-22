@@ -8,5 +8,14 @@
     <string name="title_preferences_select_city">Выберите город</string>
     <string name="summary_select_city">определите город для вывода информации о погоде</string>
 
+    <!-- Strings for main screen TextViews -->
+
+    <string name="temperature">%1$s°</string>
+    <string name="max_temperature">%1$s°</string>
+    <string name="min_temperature">   %1$s°</string>
+    <string name="humidity">Влажность: %1$s</string>
+    <string name="pressure">Давление: %1$s мм</string>
+    <string name="wind_speed">Ветер: %1$s м/с</string>
+
 
 </resources>

@@ -2,6 +2,7 @@ package name.marochko.openweathermapclient;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.appindexing.Action;
@@ -28,7 +30,17 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     int cityListId;
-    TextView textView;
+
+    TextView textViewCity;
+    ImageView imageViewWeatherIcon;
+    TextView textViewTemperature;
+    TextView textViewMaxTemperature;
+    TextView textViewMinTemperature;
+    TextView textViewWeatherDescription;
+    TextView textViewHumidity;
+    TextView textViewPressure;
+    TextView textViewWindSpeed;
+
     final String LOG_TAG = "marinfo";
     final static int REQUEST_PARAM_CITIES = 1;
     final static int REQUEST_PARAM_WEATHER = 2;
@@ -42,7 +54,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        textView = (TextView) findViewById(R.id.textView);
+
+        textViewCity = (TextView) findViewById(R.id.textViewCity);
+        imageViewWeatherIcon = (ImageView) findViewById(R.id.imageViewWeatherIcon);
+        textViewTemperature = (TextView) findViewById(R.id.textViewTemperature);
+        textViewMaxTemperature = (TextView) findViewById(R.id.textViewMaxTemperature);
+        textViewMinTemperature = (TextView) findViewById(R.id.textViewMinTemperature);
+        textViewWeatherDescription = (TextView) findViewById(R.id.textViewWeatherDescription);
+        textViewHumidity = (TextView) findViewById(R.id.textViewHumidity);
+        textViewPressure = (TextView) findViewById(R.id.textViewPressure);
+        textViewWindSpeed = (TextView) findViewById(R.id.textViewWindSpeed);
 
 /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -89,14 +110,13 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_PARAM_CITIES:
                 cityListId = data.getIntExtra("cityListId", 0);
-                textView.setText(cityListId + "");
                 break;
             case REQUEST_PARAM_WEATHER:
                 String weather = data.getStringExtra("weather");
                 Gson gson = new Gson();
                 currentWeather = gson.fromJson(weather, CurrentWeather.class);
-                textView.setText("We got the information from the Service! " + currentWeather.getWeatherInstance(0).getWeatherCode());
-                Log.d(LOG_TAG, "currentWeather.getRawResponse" + currentWeather.getRawResponse());
+
+                fillViews(currentWeather);
 
         }
 
@@ -117,7 +137,31 @@ public class MainActivity extends AppCompatActivity {
 
         startService(intent);
 
-        Log.d(LOG_TAG, "onClick end");
+
+    }
+
+    public void fillViews(CurrentWeather cw){
+
+        textViewCity.setText(getResources().getStringArray(R.array.citiesNamesArray)[cityListId]);
+
+        imageViewWeatherIcon.setImageResource(this.getResources().
+                getIdentifier(("i" + cw.getWeatherInstance(0).getWeatherIconName()),
+                "drawable", this.getPackageName()));
+
+        textViewTemperature.setText(String.format(getString(R.string.temperature),
+                (int) cw.getMainInstance().getTemperature()));
+        textViewMaxTemperature.setText(String.format(getString(R.string.max_temperature),
+                (int)cw.getMainInstance().getMaxTemperature()));
+        textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
+                (int) cw.getMainInstance().getMinTemperature()));
+        textViewWeatherDescription.setText(cw.getWeatherInstance(0).getWeatherDescription());
+        textViewHumidity.setText(String.format(getString(R.string.humidity),
+                (int)cw.getMainInstance().getHumidity())+"%");
+        textViewPressure.setText(String.format(getString(R.string.pressure),
+                (int)(cw.getMainInstance().getPressure()*0.75006375541921))); //translating from 'hPa' to 'mmHg'
+        textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
+                (int)cw.getWindInstance().getWindSpeed()));
+
 
     }
 

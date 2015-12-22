@@ -2,13 +2,13 @@
 <resources>
     <string-array name="citiesNamesArray">
         <item>Днепропетровск</item>
-        <item>Киев</item>
-        <item>Одесса</item>
+        <item>Гавайи</item>
+        <item>Нью Йорк</item>
     </string-array>
 
     <integer-array name="citiesCodesArray">
         <item>709930</item>
-        <item>703448</item>
-        <item>698740</item>
+        <item>5855797</item>
+        <item>5128581</item>
     </integer-array>
 </resources>
