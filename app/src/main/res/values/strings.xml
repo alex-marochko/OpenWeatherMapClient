@@ -17,5 +17,11 @@
     <string name="pressure">давление: %1$s мм</string>
     <string name="wind_speed">ветер: %1$s м/с</string>
 
+    <string name="updated_title">Обновлено</string>
+
+    <!--  Messages  -->
+    <string name="no_connection_message">Нет сети</string>
+    <string name="loading_message">Загрузка</string>
+
 
 </resources>

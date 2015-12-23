@@ -15,7 +15,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Днепропетровск"
+        android:text="-"
         android:textSize="25sp"
         android:textStyle="bold"
         android:textAlignment="center"
@@ -27,6 +27,7 @@
         android:layout_height="100dp"
         android:id="@+id/imageViewWeatherIcon"
         android:layout_below="@id/textViewCity"
+        android:layout_marginTop="5dp"
         android:src="@drawable/na"
         />
 
@@ -34,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="60sp"
-        android:text="-17°"
+        android:text=""
         android:layout_alignTop="@+id/imageViewWeatherIcon"
         android:layout_toRightOf="@+id/imageViewWeatherIcon"
         android:layout_toEndOf="@+id/imageViewWeatherIcon"
@@ -48,7 +49,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="25sp"
-        android:text="9°"
+        android:text=""
         android:layout_below="@id/textViewTemperature"
         android:layout_toRightOf="@+id/imageViewWeatherIcon"
         android:layout_toEndOf="@+id/imageViewWeatherIcon"
@@ -58,7 +59,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="25sp"
-        android:text="5°"
+        android:text=""
         android:layout_below="@id/textViewTemperature"
         android:layout_toRightOf="@id/textViewMaxTemperature"
         android:layout_toEndOf="@id/textViewMaxTemperature"
@@ -70,7 +71,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="22sp"
-        android:text="Солнечно"
+        android:text=""
         android:textStyle="bold"
         android:layout_below="@id/textViewMaxTemperature"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
@@ -81,7 +82,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:text="Влажность: 70%"
+        android:text="влажность:"
         android:layout_below="@id/textViewWeatherDescription"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
         android:layout_toEndOf="@id/imageViewWeatherIcon"
@@ -91,7 +92,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:text="Давление: 754 мм"
+        android:text="давление:"
         android:layout_below="@id/textViewHumidity"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
         android:layout_toEndOf="@id/imageViewWeatherIcon"
@@ -101,7 +102,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:text="Ветер: 2 м/с"
+        android:text="ветер:"
         android:layout_below="@id/textViewPressure"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
         android:layout_toEndOf="@id/imageViewWeatherIcon"
@@ -114,9 +115,24 @@
         android:layout_height="wrap_content"
         android:id="@+id/progressBarDataLoading"
         android:layout_below="@+id/textViewCity"
-        android:layout_centerHorizontal="true"
         android:visibility="invisible"
         android:indeterminate="true"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imageViewWeatherIcon"
+        android:id="@+id/textViewUpdatedTitle"
+        android:text="@string/updated_title"
+        />
+
+    <TextView
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewUpdatedTitle"
+        android:singleLine="false"
+        android:id="@+id/textViewUpdatedTime"
         />
 
 

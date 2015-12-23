@@ -3,9 +3,6 @@ package name.marochko.openweathermapclient;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,26 +14,23 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.TimeZone;
+
 
 import net.aksingh.owmjapis.CurrentWeather;
-import net.aksingh.owmjapis.OpenWeatherMap;
-
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     int cityListId = -1;
     CurrentWeather cw;
+    boolean needUpdate = false;
 
     TextView textViewCity;
     ImageView imageViewWeatherIcon;
@@ -47,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewHumidity;
     TextView textViewPressure;
     TextView textViewWindSpeed;
+    TextView textViewUpdatedTime;
 
     ProgressBar progressBar;
 
@@ -85,11 +80,17 @@ public class MainActivity extends AppCompatActivity {
         textViewPressure = (TextView) findViewById(R.id.textViewPressure);
         textViewWindSpeed = (TextView) findViewById(R.id.textViewWindSpeed);
 
+        textViewUpdatedTime = (TextView) findViewById(R.id.textViewUpdatedTime);
+
         progressBar = (ProgressBar)findViewById(R.id.progressBarDataLoading);
 
         if(cityListId > -1) {
-            progressBar.setVisibility(View.INVISIBLE);
-            fillViews();
+            if(needUpdate) {
+                loadWeatherData();
+                needUpdate = false;
+            }else{
+                fillViews();
+            }
         }else{
             startSettingsActivity();
         }
@@ -98,19 +99,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startSettingsActivity();
             return true;
@@ -144,11 +140,9 @@ public class MainActivity extends AppCompatActivity {
                 String weather = data.getStringExtra("weather");
                 Gson gson = new Gson();
                 cw = gson.fromJson(weather, CurrentWeather.class);
-                progressBar.setVisibility(View.INVISIBLE);
                 fillViews();
-
+                progressBar.setVisibility(View.GONE);
         }
-
     }
 
     public void loadWeatherData(){
@@ -165,58 +159,47 @@ public class MainActivity extends AppCompatActivity {
                 .putExtra("pendingIntent", pendingIntent);
 
         startService(intent);
-
-
     }
 
     public void fillViews(){
 
-        if(cityListId > -1) {
+        if(cw != null) {
 
-            textViewCity.setText(getResources().getStringArray(R.array.citiesNamesArray)[cityListId]);
+            if(cw.hasMainInstance()) {
 
-            imageViewWeatherIcon.setImageResource(this.getResources().
-                    getIdentifier(("i" + cw.getWeatherInstance(0).getWeatherIconName()),
-                            "drawable", this.getPackageName()));
+                textViewCity.setText(getResources().getStringArray(R.array.citiesNamesArray)[cityListId]);
 
-            textViewTemperature.setText(String.format(getString(R.string.temperature),
-                    (int) cw.getMainInstance().getTemperature()));
-            textViewMaxTemperature.setText(String.format(getString(R.string.max_temperature),
-                    (int) cw.getMainInstance().getMaxTemperature()));
-            textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
-                    (int) cw.getMainInstance().getMinTemperature()));
-            textViewWeatherDescription.setText(cw.getWeatherInstance(0).getWeatherDescription());
-            textViewHumidity.setText(String.format(getString(R.string.humidity),
-                    (int) cw.getMainInstance().getHumidity()) + "%");
-            textViewPressure.setText(String.format(getString(R.string.pressure),
-                    (int) (cw.getMainInstance().getPressure() * HPA_TO_MMHG))); //converting 'hPa' to 'mmHg'
-            textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
-                    (int) cw.getWindInstance().getWindSpeed()));
+                imageViewWeatherIcon.setImageResource(this.getResources().
+                        getIdentifier(("i" + cw.getWeatherInstance(0).getWeatherIconName()),
+                                "drawable", this.getPackageName()));
+
+                textViewTemperature.setText(String.format(getString(R.string.temperature),
+                        (int) cw.getMainInstance().getTemperature()));
+                textViewMaxTemperature.setText(String.format(getString(R.string.max_temperature),
+                        (int) cw.getMainInstance().getMaxTemperature()));
+                textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
+                        (int) cw.getMainInstance().getMinTemperature()));
+                textViewWeatherDescription.setText(cw.getWeatherInstance(0).getWeatherDescription());
+                textViewHumidity.setText(String.format(getString(R.string.humidity),
+                        (int) cw.getMainInstance().getHumidity()) + "%");
+                textViewPressure.setText(String.format(getString(R.string.pressure),
+                        (int) (cw.getMainInstance().getPressure() * HPA_TO_MMHG))); //converting 'hPa' to 'mmHg'
+                textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
+                        (int) cw.getWindInstance().getWindSpeed()));
+
+
+                Date d = new Date();
+                SimpleDateFormat formatting = new SimpleDateFormat("m");
+                long l = d.getTime() - cw.getDateTime().getTime();
+                String formatted = formatting.format(l) + " мин. назад";
+                textViewUpdatedTime.setText(formatted);
+
+
+            }else {
+                textViewCity.setText(R.string.no_connection_message);
+            }
         }
 
-/*
-        else{
-
-            textViewCity.setText(TV_DUMMY);
-
-            imageViewWeatherIcon.setImageResource(R.drawable.na);
-
-            textViewTemperature.setText(String.format(getString(R.string.temperature),
-                    TV_DUMMY));
-            textViewMaxTemperature.setText(String.format(getString(R.string.max_temperature),
-                    TV_DUMMY));
-            textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
-                    TV_DUMMY));
-            textViewWeatherDescription.setText(TV_DUMMY);
-            textViewHumidity.setText(String.format(getString(R.string.humidity),
-                    TV_DUMMY) + "%");
-            textViewPressure.setText(String.format(getString(R.string.pressure),
-                    TV_DUMMY));
-            textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
-                    TV_DUMMY));
-
-        }
-*/
 
     }
 
@@ -249,7 +232,16 @@ public class MainActivity extends AppCompatActivity {
         String jsonString;
         jsonString = preferences.getString("cwd", "");
         cw = gson.fromJson(jsonString, CurrentWeather.class);
-        cityListId = preferences.getInt("cityListId", -1);
+        cityListId = preferences.getInt("cityListId", - 1);
+
+        if(cw != null){
+            if(cw.hasMainInstance()) {
+
+                Date d = new Date();
+                //if elapsed time from last data update exceeds 30 min, then set update flag
+                if ((d.getTime() - cw.getDateTime().getTime()) > 30 * 60 * 1000) needUpdate = true;
+            }
+        }
     }
 
     @Override
