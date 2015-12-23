@@ -47,7 +47,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
+        android:textSize="25sp"
         android:text="9°"
         android:layout_below="@id/textViewTemperature"
         android:layout_toRightOf="@+id/imageViewWeatherIcon"
@@ -57,7 +57,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="30sp"
+        android:textSize="25sp"
         android:text="5°"
         android:layout_below="@id/textViewTemperature"
         android:layout_toRightOf="@id/textViewMaxTemperature"
@@ -69,8 +69,9 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:text="Солнечно"
+        android:textStyle="bold"
         android:layout_below="@id/textViewMaxTemperature"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
         android:layout_toEndOf="@id/imageViewWeatherIcon"
@@ -79,7 +80,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:text="Влажность: 70%"
         android:layout_below="@id/textViewWeatherDescription"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
@@ -89,7 +90,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:text="Давление: 754 мм"
         android:layout_below="@id/textViewHumidity"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
@@ -99,7 +100,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:text="Ветер: 2 м/с"
         android:layout_below="@id/textViewPressure"
         android:layout_toRightOf="@id/imageViewWeatherIcon"
@@ -107,14 +108,16 @@
         android:id="@+id/textViewWindSpeed"/>
 
 
-    <Button
-        android:layout_width="wrap_content"
+    <ProgressBar
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get data"
-        android:layout_alignParentBottom="true"
-        android:onClick="onClick"
-        android:id="@+id/button" />
-
+        android:id="@+id/progressBarDataLoading"
+        android:layout_below="@+id/textViewCity"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        android:indeterminate="true"
+        />
 
 
 </RelativeLayout>

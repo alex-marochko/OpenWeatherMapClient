@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -61,6 +62,7 @@ public class OWMIntentService extends IntentService {
 
         String json = gson.toJson(cwd);
 
+
         Intent weatherDataIntent = new Intent().putExtra("weather", json);
         try {
             pendingIntent.send(OWMIntentService.this, MainActivity.REQUEST_PARAM_WEATHER, weatherDataIntent);
@@ -68,7 +70,10 @@ public class OWMIntentService extends IntentService {
             e.printStackTrace();
         }
 
-
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("OWMC" , MODE_PRIVATE);
+        SharedPreferences.Editor spEditor = sharedPreferences.edit();
+        spEditor.putString("cwd", json);
+        spEditor.commit();
 
     }
 

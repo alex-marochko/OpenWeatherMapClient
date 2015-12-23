@@ -2,6 +2,7 @@ package name.marochko.openweathermapclient;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,12 +14,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import net.aksingh.owmjapis.CurrentWeather;
 import net.aksingh.owmjapis.OpenWeatherMap;
@@ -26,10 +30,13 @@ import net.aksingh.owmjapis.OpenWeatherMap;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    int cityListId;
+    int cityListId = -1;
+    CurrentWeather cw;
 
     TextView textViewCity;
     ImageView imageViewWeatherIcon;
@@ -41,16 +48,29 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewPressure;
     TextView textViewWindSpeed;
 
+    ProgressBar progressBar;
+
     final String LOG_TAG = "marinfo";
+    final String TV_DUMMY = "?";
     final static int REQUEST_PARAM_CITIES = 1;
     final static int REQUEST_PARAM_WEATHER = 2;
+
+    final static float HPA_TO_MMHG = 0.75006375541921f;
     CurrentWeather currentWeather;
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
+        restoreData();
+
+    }
+
+    private void prepareViews(){
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -65,16 +85,15 @@ public class MainActivity extends AppCompatActivity {
         textViewPressure = (TextView) findViewById(R.id.textViewPressure);
         textViewWindSpeed = (TextView) findViewById(R.id.textViewWindSpeed);
 
-/*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-*/
+        progressBar = (ProgressBar)findViewById(R.id.progressBarDataLoading);
+
+        if(cityListId > -1) {
+            progressBar.setVisibility(View.INVISIBLE);
+            fillViews();
+        }else{
+            startSettingsActivity();
+        }
+
     }
 
     @Override
@@ -93,13 +112,19 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-
-            Intent intent = new Intent(this, SelectCityActivity.class);
-            startActivityForResult(intent, REQUEST_PARAM_CITIES);
+            startSettingsActivity();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startSettingsActivity(){
+
+        Intent intent = new Intent(this, SelectCityActivity.class);
+        intent.putExtra("cityListId", cityListId);
+        startActivityForResult(intent, REQUEST_PARAM_CITIES);
+
     }
 
     @Override
@@ -109,20 +134,24 @@ public class MainActivity extends AppCompatActivity {
 
         switch (requestCode) {
             case REQUEST_PARAM_CITIES:
-                cityListId = data.getIntExtra("cityListId", 0);
+                cityListId = data.getIntExtra("cityListId", -1);
+
+                progressBar.setVisibility(View.VISIBLE);
+
+                loadWeatherData();
                 break;
             case REQUEST_PARAM_WEATHER:
                 String weather = data.getStringExtra("weather");
                 Gson gson = new Gson();
-                currentWeather = gson.fromJson(weather, CurrentWeather.class);
-
-                fillViews(currentWeather);
+                cw = gson.fromJson(weather, CurrentWeather.class);
+                progressBar.setVisibility(View.INVISIBLE);
+                fillViews();
 
         }
 
     }
 
-    public void onClick(View view){
+    public void loadWeatherData(){
 
         Log.d(LOG_TAG, "onClick start");
 
@@ -140,31 +169,95 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void fillViews(CurrentWeather cw){
+    public void fillViews(){
 
-        textViewCity.setText(getResources().getStringArray(R.array.citiesNamesArray)[cityListId]);
+        if(cityListId > -1) {
 
-        imageViewWeatherIcon.setImageResource(this.getResources().
-                getIdentifier(("i" + cw.getWeatherInstance(0).getWeatherIconName()),
-                "drawable", this.getPackageName()));
+            textViewCity.setText(getResources().getStringArray(R.array.citiesNamesArray)[cityListId]);
 
-        textViewTemperature.setText(String.format(getString(R.string.temperature),
-                (int) cw.getMainInstance().getTemperature()));
-        textViewMaxTemperature.setText(String.format(getString(R.string.max_temperature),
-                (int)cw.getMainInstance().getMaxTemperature()));
-        textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
-                (int) cw.getMainInstance().getMinTemperature()));
-        textViewWeatherDescription.setText(cw.getWeatherInstance(0).getWeatherDescription());
-        textViewHumidity.setText(String.format(getString(R.string.humidity),
-                (int)cw.getMainInstance().getHumidity())+"%");
-        textViewPressure.setText(String.format(getString(R.string.pressure),
-                (int)(cw.getMainInstance().getPressure()*0.75006375541921))); //translating from 'hPa' to 'mmHg'
-        textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
-                (int)cw.getWindInstance().getWindSpeed()));
+            imageViewWeatherIcon.setImageResource(this.getResources().
+                    getIdentifier(("i" + cw.getWeatherInstance(0).getWeatherIconName()),
+                            "drawable", this.getPackageName()));
 
+            textViewTemperature.setText(String.format(getString(R.string.temperature),
+                    (int) cw.getMainInstance().getTemperature()));
+            textViewMaxTemperature.setText(String.format(getString(R.string.max_temperature),
+                    (int) cw.getMainInstance().getMaxTemperature()));
+            textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
+                    (int) cw.getMainInstance().getMinTemperature()));
+            textViewWeatherDescription.setText(cw.getWeatherInstance(0).getWeatherDescription());
+            textViewHumidity.setText(String.format(getString(R.string.humidity),
+                    (int) cw.getMainInstance().getHumidity()) + "%");
+            textViewPressure.setText(String.format(getString(R.string.pressure),
+                    (int) (cw.getMainInstance().getPressure() * HPA_TO_MMHG))); //converting 'hPa' to 'mmHg'
+            textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
+                    (int) cw.getWindInstance().getWindSpeed()));
+        }
+
+/*
+        else{
+
+            textViewCity.setText(TV_DUMMY);
+
+            imageViewWeatherIcon.setImageResource(R.drawable.na);
+
+            textViewTemperature.setText(String.format(getString(R.string.temperature),
+                    TV_DUMMY));
+            textViewMaxTemperature.setText(String.format(getString(R.string.max_temperature),
+                    TV_DUMMY));
+            textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
+                    TV_DUMMY));
+            textViewWeatherDescription.setText(TV_DUMMY);
+            textViewHumidity.setText(String.format(getString(R.string.humidity),
+                    TV_DUMMY) + "%");
+            textViewPressure.setText(String.format(getString(R.string.pressure),
+                    TV_DUMMY));
+            textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
+                    TV_DUMMY));
+
+        }
+*/
 
     }
 
+    private void saveData(){
+
+        Gson gson = new GsonBuilder()
+                .serializeSpecialFloatingPointValues()
+                .create();
+
+        String json = gson.toJson(cw);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("OWMC", MODE_PRIVATE);
+        SharedPreferences.Editor spEditor = sharedPreferences.edit();
+        spEditor.putString("cwd", json);
+        spEditor.putInt("cityListId", cityListId);
+        spEditor.apply();
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        saveData();
+    }
+
+    private void restoreData(){
+
+        SharedPreferences preferences
+                = getSharedPreferences("OWMC", MODE_PRIVATE);
+        Gson gson = new Gson();
+        String jsonString;
+        jsonString = preferences.getString("cwd", "");
+        cw = gson.fromJson(jsonString, CurrentWeather.class);
+        cityListId = preferences.getInt("cityListId", -1);
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        prepareViews();
+    }
 
 }
 
