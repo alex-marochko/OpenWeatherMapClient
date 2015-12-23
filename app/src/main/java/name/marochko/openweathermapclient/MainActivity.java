@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,12 +17,9 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.text.DateFormat;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Calendar;
-import java.util.TimeZone;
-
 
 import net.aksingh.owmjapis.CurrentWeather;
 
@@ -43,17 +40,10 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewWindSpeed;
     TextView textViewUpdatedTime;
 
-    ProgressBar progressBar;
-
-    final String LOG_TAG = "marinfo";
-    final String TV_DUMMY = "?";
     final static int REQUEST_PARAM_CITIES = 1;
     final static int REQUEST_PARAM_WEATHER = 2;
 
     final static float HPA_TO_MMHG = 0.75006375541921f;
-    CurrentWeather currentWeather;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
 
         textViewUpdatedTime = (TextView) findViewById(R.id.textViewUpdatedTime);
 
-        progressBar = (ProgressBar)findViewById(R.id.progressBarDataLoading);
 
         if(cityListId > -1) {
             if(needUpdate) {
@@ -132,8 +121,6 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_PARAM_CITIES:
                 cityListId = data.getIntExtra("cityListId", -1);
 
-                progressBar.setVisibility(View.VISIBLE);
-
                 loadWeatherData();
                 break;
             case REQUEST_PARAM_WEATHER:
@@ -141,13 +128,10 @@ public class MainActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 cw = gson.fromJson(weather, CurrentWeather.class);
                 fillViews();
-                progressBar.setVisibility(View.GONE);
         }
     }
 
     public void loadWeatherData(){
-
-        Log.d(LOG_TAG, "onClick start");
 
         Intent dummyIntent = new Intent();
 
@@ -180,8 +164,8 @@ public class MainActivity extends AppCompatActivity {
                 textViewMinTemperature.setText(String.format(getString(R.string.min_temperature),
                         (int) cw.getMainInstance().getMinTemperature()));
                 textViewWeatherDescription.setText(cw.getWeatherInstance(0).getWeatherDescription());
-                textViewHumidity.setText(String.format(getString(R.string.humidity),
-                        (int) cw.getMainInstance().getHumidity()) + "%");
+                String s = String.format(getString(R.string.humidity), (int) cw.getMainInstance().getHumidity()) + "%";
+                textViewHumidity.setText(s);
                 textViewPressure.setText(String.format(getString(R.string.pressure),
                         (int) (cw.getMainInstance().getPressure() * HPA_TO_MMHG))); //converting 'hPa' to 'mmHg'
                 textViewWindSpeed.setText(String.format(getString(R.string.wind_speed),
